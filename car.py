@@ -71,15 +71,21 @@ class Car:
     def update(self):
         lastPosition = self.position
 
-        self.rayData = self.getRayData() #cast rays and get distance info
-
         self.updateDirection() #Rotate body data and determine how much to turn using neural network
         self.position = Point(self.position.x + self.direction.x * self.speed, self.position.y + self.direction.y * self.speed) #move in the relative forward direction
+        
+        st = time.perf_counter()
+        self.rayData = self.getRayData() #cast rays and get distance info
+        et = time.perf_counter()
 
         if (self.checkCollision()): #if the car collides with the wall
             self.position = lastPosition
         
+        
+        
         self.getFitnessScore() #get the current fitness score
+        
+        #print(et - st)
 
     
     def draw(self):
@@ -97,52 +103,126 @@ class Car:
             self.rays[i].undraw()
             self.rays[i] = Line(self.position, Point(self.position.x + self.rayDirections[i].x * self.rayData[i], self.position.y + self.rayDirections[i].y * self.rayData[i]))
             self.rays[i].setWidth(1)  
-            self.rays[i].setFill(color_rgb(255, 0, 0))
+            self.rays[i].setFill(color_rgb(0, 0, 255))
             self.rays[i].draw(self.win)   
+
 
     #get the distances from the rays to the walls
     def getRayData(self):
-        rayData = []
+        rayData = [0, 0, 0, 0, 0]
+        
+        
+        currentSeg = int(self.fitnessScore % self.track.numOfSegments)
+        checkRange = int(self.track.numOfSegments / 2)
 
-        segStartIndex = (self.fitnessScore % self.track.numOfSegments - self.track.numOfSegments / 4)
-        if (segStartIndex < 0): 
-            segStartIndex = self.track.numOfSegments + segStartIndex
-            
-        segEndIndex = (self.fitnessScore % self.track.numOfSegments + self.track.numOfSegments / 4)
-        if (segEndIndex > self.track.numOfSegments - 1): 
-            segEndIndex = self.track.numOfSegments - 1 - segEndIndex
+        relativePosX = self.position.x - 400
+        relativePosY = 400 - self.position.y
 
-        if (segStartIndex < segEndIndex):
-            buffer = segEndIndex
-            segEndIndex = segStartIndex
-            segStartIndex = buffer
+        
+        quadrant = ""
+        if (relativePosX < 0): #left side
+            if (relativePosY >= 0): #top side
+                quadrant = "top left"
+            else: #bottom side
+                quadrant = "bottom left"
+        else: #right side
+            if (relativePosY >= 0): #top side
+                quadrant = "top right"
+            else: #bottom side
+               quadrant = "bottom right"
+        
+        
+        for rd in range(self.rayDirections.__len__()):
+            if (quadrant == "top left"):
+                
+                if(self.rayDirections[rd].y <= 0):
+                    rayData[rd] = self.rayCheckForwardBackward(rd, currentSeg, checkRange)
+                else:
+                    rayData[rd] = self.rayCheckBackwardForward(rd, currentSeg, checkRange)
+                
+            elif (quadrant == "top right"):
+                if(self.rayDirections[rd].x >= 0):
+                    rayData[rd] = self.rayCheckForwardBackward(rd, currentSeg, checkRange)
+                else:
+                    rayData[rd] = self.rayCheckBackwardForward(rd, currentSeg, checkRange)
 
-        for r in range(self.rayDirections.__len__()): #check all rays
-            closestWallDist = float('inf')
-            for i in range(int(segStartIndex)): #for each ray check all wall segments
-                insideHitDist = self.rayLineIntersection(self.position, self.rayDirections[r], self.track.insidePointList[i], self.track.insidePointList[(i + 1) % self.track.numOfSegments])
-                outsideHitDist = self.rayLineIntersection(self.position, self.rayDirections[r], self.track.outsidePointList[i], self.track.outsidePointList[(i + 1) % self.track.numOfSegments])
-                if (insideHitDist != -1 and insideHitDist < closestWallDist):
-                    closestWallDist = insideHitDist
-                if (outsideHitDist != -1 and outsideHitDist < closestWallDist):
-                    closestWallDist = outsideHitDist
+            elif (quadrant == "bottom left"):
+                if(self.rayDirections[rd].x <= 0):
+                    rayData[rd] = self.rayCheckForwardBackward(rd, currentSeg, checkRange)
+                else:
+                    rayData[rd] = self.rayCheckBackwardForward(rd, currentSeg, checkRange)
 
-            for i in range(int(segEndIndex), self.track.numOfSegments): #for each ray check all wall segments
-                insideHitDist = self.rayLineIntersection(self.position, self.rayDirections[r], self.track.insidePointList[i], self.track.insidePointList[(i + 1) % self.track.numOfSegments])
-                outsideHitDist = self.rayLineIntersection(self.position, self.rayDirections[r], self.track.outsidePointList[i], self.track.outsidePointList[(i + 1) % self.track.numOfSegments])
-                if (insideHitDist != -1 and insideHitDist < closestWallDist):
-                    closestWallDist = insideHitDist
-                if (outsideHitDist != -1 and outsideHitDist < closestWallDist):
-                    closestWallDist = outsideHitDist
+            elif (quadrant == "bottom right"):
+                if(self.rayDirections[rd].y >= 0):
+                    rayData[rd] = self.rayCheckForwardBackward(rd, currentSeg, checkRange)
+                else:
+                    rayData[rd] = self.rayCheckBackwardForward(rd, currentSeg, checkRange)
 
-            rayData.append(closestWallDist)
-
+        
+        
         return rayData
+
+    def rayCheckForwardBackward(self, rd, currentSeg, checkRange):
+        closestDist = float('inf')
+        closestDist = self.rayCheckForward(rd, currentSeg, checkRange)
+
+        if (closestDist != float('inf')):
+            return closestDist
+
+        closestDist = self.rayCheckBackward(rd, currentSeg, checkRange)
+        return closestDist
+
+    def rayCheckBackwardForward(self, rd, currentSeg, checkRange):
+        closestDist = float('inf')
+        closestDist = self.rayCheckBackward(rd, currentSeg, checkRange)
+        
+        if (closestDist != float('inf')):
+            return closestDist
+
+        closestDist = self.rayCheckForward(rd, currentSeg, checkRange)
+        
+        return closestDist
+
+    def rayCheckForward(self, rd, currentSeg, checkRange):
+        closestDist = float('inf')
+        
+        for i in range(currentSeg, currentSeg + checkRange):
+            outsideHitDist = self.rayLineIntersection(self.position, self.rayDirections[rd], self.track.outsidePointList[i % self.track.numOfSegments], self.track.outsidePointList[(i - 1) % self.track.numOfSegments])
+            if (outsideHitDist != -1):
+                closestDist = outsideHitDist
+
+            insideHitDist = self.rayLineIntersection(self.position, self.rayDirections[rd], self.track.insidePointList[i % self.track.numOfSegments], self.track.insidePointList[(i - 1) % self.track.numOfSegments])
+            if (insideHitDist != -1):
+                if (outsideHitDist == -1 or (outsideHitDist != -1 and insideHitDist < outsideHitDist)):
+                    closestDist = insideHitDist
+                
+            if (closestDist != float('inf')):
+                break
+        
+        return closestDist
+
+    def rayCheckBackward(self, rd, currentSeg, checkRange):
+        closestDist = float('inf')
+
+        for i in range(currentSeg, currentSeg - checkRange, -1):
+            outsideHitDist = self.rayLineIntersection(self.position, self.rayDirections[rd], self.track.outsidePointList[i % self.track.numOfSegments], self.track.outsidePointList[(i + 1) % self.track.numOfSegments])
+            if (outsideHitDist != -1):
+                closestDist = outsideHitDist
+
+            insideHitDist = self.rayLineIntersection(self.position, self.rayDirections[rd], self.track.insidePointList[i % self.track.numOfSegments], self.track.insidePointList[(i + 1) % self.track.numOfSegments])
+            if (insideHitDist != -1):
+                if (outsideHitDist == -1 or (outsideHitDist != -1 and insideHitDist < outsideHitDist)):
+                    closestDist = insideHitDist
+                
+            if (closestDist != float('inf')):
+                break
+
+        return closestDist
 
     #input ray data into nn, get new direction data, turn the car accordingly
     def updateDirection(self):
         #newDirectionData = self.nn.GetNextDirectionData(self.getRayData())
-        angle = self.rotationSpeed / 60 #this will later be calculated from newDirectionData
+        angle = self.rotationSpeed #this will later be calculated from newDirectionData
         
         #rotate direction
         self.direction = self.rotateVector(self.direction, angle)
@@ -188,30 +268,9 @@ class Car:
     def checkCollision(self):
         if (self.carBody.getPoints().__len__() == 0): #is only true first frame but is need so it doesn't break
             return False
-        
-        topLeft = self.carBody.getPoints()[0]
-        bottomLeft = self.carBody.getPoints()[1]
-        topRight = self.carBody.getPoints()[3]
-        bottomRight = self.carBody.getPoints()[2]
 
-        topLeftToBottomLeftDir = Point((bottomLeft.x - topLeft.x) / self.height, (bottomLeft.y - topLeft.y) / self.height)
-        topLeftToTopRightDir = Point((topRight.x - topLeft.x) / self.width, (topRight.y - topLeft.y) / self.width)
-        topRightToBottomRightDir = Point((bottomRight.x - topRight.x) / self.height, (bottomRight.y - topRight.y) / self.height)
-
-        for i in range(self.track.numOfSegments):
-            topLeftToBottomLeftOutsideDist = self.rayLineIntersection(topLeft, topLeftToBottomLeftDir, self.track.outsidePointList[i], self.track.outsidePointList[(i + 1) % self.track.numOfSegments])
-            topLeftToBottomLeftInsideDist = self.rayLineIntersection(topLeft, topLeftToBottomLeftDir, self.track.insidePointList[i], self.track.insidePointList[(i + 1) % self.track.numOfSegments])
-            if ((topLeftToBottomLeftOutsideDist != -1 and topLeftToBottomLeftOutsideDist <= 4) or (topLeftToBottomLeftInsideDist != -1 and topLeftToBottomLeftInsideDist <= 4)):
+        for r in range(1, self.rayData.__len__() - 1):
+            if (self.rayData[r] < 5):
                 return True
 
-            topLeftToTopRightOutsideDist = self.rayLineIntersection(topLeft, topLeftToTopRightDir, self.track.outsidePointList[i], self.track.outsidePointList[(i + 1) % self.track.numOfSegments])
-            topLeftToTopRightInsideDist = self.rayLineIntersection(topLeft, topLeftToTopRightDir, self.track.insidePointList[i], self.track.insidePointList[(i + 1) % self.track.numOfSegments])
-            if ((topLeftToTopRightOutsideDist != -1 and topLeftToTopRightOutsideDist <= self.width) or (topLeftToTopRightInsideDist != -1 and topLeftToTopRightInsideDist <= self.width)):
-                return True
-
-            topRightToBottomRightOutsideDist = self.rayLineIntersection(topRight, topRightToBottomRightDir, self.track.outsidePointList[i], self.track.outsidePointList[(i + 1) % self.track.numOfSegments])
-            topRightToBottomRightInsideDist = self.rayLineIntersection(topRight, topRightToBottomRightDir, self.track.insidePointList[i], self.track.insidePointList[(i + 1) % self.track.numOfSegments])
-            if ((topRightToBottomRightOutsideDist != -1 and topRightToBottomRightOutsideDist <= 4) or (topRightToBottomRightInsideDist != -1 and topRightToBottomRightInsideDist <= self.height / 4)):
-                return True
-        
         return False

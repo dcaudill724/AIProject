@@ -8,15 +8,15 @@ import random
 
 
 #track variables
-trackSegments = 20
+trackSegments = 40
 trackRadius = 300
-trackVariance = 300
+trackVariance = 200
 trackMidpoint = Point(400, 400)
 trackWidth = 100
 
 #car variables
 cars = []
-carsPerGeneration = 20
+carsPerGeneration = 25
 
 carSpeed = 1 #pixels per frame
 carColor = color_rgb(0, 255, 0)
@@ -32,9 +32,10 @@ def main():
 
     track = Track(trackSegments, trackRadius, trackVariance, trackMidpoint, trackWidth, win) #instantiane track
     for i in range(carsPerGeneration):
-        cars.append(Car([], carSpeed, carWidth, carHeight, carColor, track, win, i / 10))
+        cars.append(Car([], carSpeed, carWidth, carHeight, carColor, track, win, i / 300))
 
     ########################################################################
+    """
     #genetic test
     topCarsAmount = 10
     test = Genetic(cars)
@@ -49,6 +50,7 @@ def main():
     topCarsList = test.crossover(topCarsList)
     topCarsList = test.mutation(topCarsList)
     test.newGen(topCarsList)
+    """
     ###########################################################################
     
     win.updateRoot()
@@ -81,8 +83,8 @@ def main():
             if (not training):
                 for i in range(carsPerGeneration):
                     cars[i].draw() #draw it all to canvas
-                
                 win.updateRoot()
+                
             #~~~~~~~~~~~~~~~~~~~~~~~
             lastFrameTime = currentFrameTime - (currentFrameTime % (1.0 / fps))
             frameCount += 1
