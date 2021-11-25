@@ -2,7 +2,10 @@ from tkinter.constants import TRUE
 from graphics import *
 from car import *
 from track import *
+from genetic import Genetic
 import time
+import random
+
 
 #track variables
 trackSegments = 20
@@ -13,7 +16,7 @@ trackWidth = 100
 
 #car variables
 cars = []
-carsPerGeneration = 1
+carsPerGeneration = 20
 
 carSpeed = 1 #pixels per frame
 carColor = color_rgb(0, 255, 0)
@@ -29,10 +32,25 @@ def main():
 
     track = Track(trackSegments, trackRadius, trackVariance, trackMidpoint, trackWidth, win) #instantiane track
     for i in range(carsPerGeneration):
-        cars.append(Car([2.5], carSpeed, carWidth, carHeight, carColor, track, win, i / 10))
+        cars.append(Car([], carSpeed, carWidth, carHeight, carColor, track, win, i / 10))
 
+    ########################################################################
+    #genetic test
+    topCarsAmount = 10
+    test = Genetic(cars)
     
-
+    #generate random fitness scores for testing 
+    fitnessList = []  
+    for i in range(carsPerGeneration):
+        r = random.randint(0,100)
+        fitnessList.append(r)
+    
+    topCarsList = test.selection(topCarsAmount,fitnessList)
+    topCarsList = test.crossover(topCarsList)
+    topCarsList = test.mutation(topCarsList)
+    test.newGen(topCarsList)
+    ###########################################################################
+    
     win.updateRoot()
 
     #gameloop data
