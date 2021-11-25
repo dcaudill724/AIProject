@@ -1,6 +1,4 @@
-from graphics import Point
 import math
-import random
 from graphics import *
 from perlin_noise import PerlinNoise
 
@@ -40,19 +38,18 @@ class Track:
 
         self.draw(win)
 
-
     def draw(self, win):
         for i in range(self.numOfSegments):
             insideP1 = self.insidePointList[i]
             insideP2 = self.insidePointList[(i + 1) % self.numOfSegments]
             insideLine = Line(insideP1, insideP2)
-            insideLine.setWidth(3)
+            insideLine.setWidth(6)
             insideLine.draw(win)
 
             outsideP1 = self.outsidePointList[i]
             outsideP2 = self.outsidePointList[(i + 1) % self.numOfSegments]
             outsideLine = Line(outsideP1, outsideP2)
-            outsideLine.setWidth(3)
+            outsideLine.setWidth(6)
             outsideLine.draw(win)
 
             roadPolygon = Polygon(outsideP1, insideP1, insideP2, outsideP2)

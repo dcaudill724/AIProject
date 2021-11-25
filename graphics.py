@@ -302,8 +302,12 @@ class GraphWin(tk.Canvas):
       
     def flush(self):
         """Update drawing to the window"""
+        print("testFlush")
         self.__checkOpen()
         self.update_idletasks()
+
+    def updateRoot(self):
+        _root.update()
         
     def getMouse(self):
         """Wait for mouse click and return Point object representing
@@ -521,6 +525,7 @@ class GraphicsObject:
             self.canvas.move(self.id, x, y)
             if canvas.autoflush:
                 _root.update()
+        
            
     def _reconfig(self, option, setting):
         # Internal method for changing configuration of the object
