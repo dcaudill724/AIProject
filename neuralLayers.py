@@ -3,16 +3,19 @@ import numpy as np
 
 def main():
     a = inputLayer([0.4, 0.5, 0.6, 0.7, 0.8])
-    b = hiddenLayer(a.output(), [0.6, 0.7, 0.8, 0.9])
-    c = outputLayer(b.output())
+    b = hiddenLayer(a.output(), [[0.1, 0.2, 0.3, 0.9, 0.6], [0.4, 0.1, 0.9, 0.9, 0.5], [0.9, 0.4, 0.6, 0.9, 0.4], [0.1, 0.9, 0.8, 0.7, 0.6]])
+    c = outputLayer(b.output(), [[0.4, 0.9, 0.3, 0.1,], [0.8, 0.1, 0.2, 0.1,], [0.8, 0.6, 0.2, 0.5,]])
     print(c.output())
 
+# Takes a matrix of size 5 x 1
 class inputLayer():
-
     def __init__(self, i):
-        self.inputs = []
+        self.tmp = []
         for x in i:
-            self.inputs.append(self.sigmoid(x))
+            self.tmp.append(self.sigmoid(x))
+        self.inputs = []
+        for i in range(4):
+            self.inputs.append(self.tmp)
 
     def sigmoid(self, x):
         return 1.0 / (1.0+ np.exp(-x))
@@ -21,9 +24,8 @@ class inputLayer():
         return self.inputs
 
 
-# Takes an array of arrays...  [ [1, 2, 3], [4, 5, 6], [7, 8, 9], .... ]
+# Takes a matrix of size 5 x 4
 class hiddenLayer():
-
     addedInputs = []
 
     def __init__(self, i, w):
@@ -35,40 +37,44 @@ class hiddenLayer():
         #print("sigmoid:")
         for x in range(len(self.addedInputs)):
             self.addedInputs[x] = self.sigmoid(self.addedInputs[x])
-            #print(self.addedInputs[x])
 
     def addInputWeights(self, i, w, x):
         if len(self.addedInputs) <= x:
             self.addedInputs.append(0)
-        self.addedInputs[x] = np.sum(np.dot(i, w))
+        for c in range(len(w)):
+            self.addedInputs[x] += (i[c] * w[c])
 
     def sigmoid(self, x):
         return 1.0 / (1.0+ np.exp(-x))
 
     def output(self):
-        return self.addedInputs
+        tmp = []
+        for i in range(3):
+            tmp.append(self.addedInputs)
+        return tmp
 
+# Takes a matrix of size 4 x 3
 class outputLayer():
-
     addedInputs = []
 
-    def __init__(self, i):
+    def __init__(self, i, w):
         for x in range(len(i)):
-            self.addInputWeights(i[x], x)
+            self.addInputWeights(i[x], w[x], x)
+        
+        for x in range(len(self.addedInputs)):
             self.addedInputs[x] = self.sigmoid(self.addedInputs[x])
 
-    def addInputWeights(self, i, x):
+    def addInputWeights(self, i, w, x):
         if len(self.addedInputs) <= x:
             self.addedInputs.append(0)
-        self.addedInputs[x] = np.sum(i)
+        for c in range(len(w)):
+            self.addedInputs[x] += (i[c] * w[c])
 
     def sigmoid(self, x):
         return 1.0 / (1.0+ np.exp(-x))
 
     def output(self):
         return self.addedInputs
-
-
 
 
 main()
