@@ -1,5 +1,4 @@
 import numpy as np
-from numpy.lib.shape_base import split
 from neuralLayers import *
 
 class NeuralNetwork():
@@ -14,8 +13,8 @@ class NeuralNetwork():
         self.oLayer = outputLayer(self.hLayer.output(), self.oWeights)
 
     def seperateWeights(self, w):
-        self.hWeights = w[0:20]
-        self.oWeights = w[21:28]
+        self.hWeights = [w[0:5], w[5:10], w[10:15], w[15:20]]
+        self.oWeights = [w[20:24], w[24:28]]
     
     def output(self):
         return self.oLayer.output()
