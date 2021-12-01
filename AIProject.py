@@ -16,7 +16,7 @@ trackWidth = 100
 
 #car variables
 cars = []
-carsPerGeneration = 25
+carsPerGeneration = 100
 
 carSpeed = 1 #pixels per frame
 carColor = color_rgb(0, 255, 0)

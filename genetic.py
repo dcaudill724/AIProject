@@ -6,7 +6,7 @@ class Genetic:
     def __init__(self, cars):
         self.carsList = cars
         self.generationNum = 0
-        self.DNAlength = 10
+        self.DNAlength = 28
         
         self.firstGen()
         
@@ -44,15 +44,15 @@ class Genetic:
     def crossover(self, topCarsList):
         tempcarsList = []
         topCarsAmount = len(topCarsList)
-        halfcars = int(topCarsAmount/2) 
+        halfcarDNA = int(self.DNAlength/2) 
         child1,child2 = [],[]
         
         for i in range(0, topCarsAmount, 2):
             parent1 = topCarsList[i].dna.copy()
             parent2 = topCarsList[i+1].dna.copy()
             
-            child1 = parent1[:halfcars] + parent2[halfcars:]
-            child2 = parent2[:halfcars] + parent1[halfcars:]
+            child1 = parent1[:halfcarDNA] + parent2[halfcarDNA:]
+            child2 = parent2[:halfcarDNA] + parent1[halfcarDNA:]
             
             tempcarsList.append(child1)
             tempcarsList.append(child2)
