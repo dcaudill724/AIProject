@@ -96,8 +96,8 @@ class Genetic:
             indexIndex = random.randrange(0, len(dnaIndeces)) #get a random index
             dnaToMutateIndex = dnaIndeces[indexIndex] #get index of dna at index
 
-            if (indexIndex >= 20):
-                smallMutation = random.uniform(-0.005, 0.005)
+            if (dnaToMutateIndex >= 20):
+                smallMutation = random.uniform(-0.0005, 0.0005)
 
                 dna[dnaToMutateIndex] += smallMutation
             else:

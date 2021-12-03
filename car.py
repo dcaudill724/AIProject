@@ -267,7 +267,7 @@ class Car:
             turnRight = directionData[1]
             turnLeft = directionData[0]
             turnTotal = turnRight - turnLeft
-            angle = turnTotal / 2
+            angle = turnTotal
             #print(mappedRayData)
         
         
