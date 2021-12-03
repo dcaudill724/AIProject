@@ -11,26 +11,22 @@ import random
 
 
 #track variables
-trackSegments = 40
+trackSegments = 30
 trackRadius = 300
-trackVariance = 100
+trackVariance = 200
 trackMidpoint = Point(400, 400)
-trackWidth = 100
+trackWidth = 150
 
-#car variables
-cars = []
-carsPerGeneration = 10
-
-carSpeed = 1 #pixels per frame
+carSpeed = 2 #pixels per frame
 carColor = color_rgb(0, 255, 0)
 carWidth = 10
 carHeight = 16
 
 #Genetic algorithm variables
-framesPerGeneration = 1200
-carsPerGeneration = 10
-topCarsToBreed = 2
-mutationChance = 0.03
+framesPerGeneration = 2400
+carsPerGeneration = 20
+topCarsToBreed = 3
+mutationRate = 0.1
 
 def main():
     
@@ -38,7 +34,7 @@ def main():
     win.setBackground(color_rgb(0, 150, 50))
     
     track = Track(trackSegments, trackRadius, trackVariance, trackMidpoint, trackWidth, win) #instantiane track
-    genetic = Genetic(carsPerGeneration, mutationChance, carSpeed, carWidth, carHeight, carColor, track, win)
+    genetic = Genetic(carsPerGeneration, mutationRate, carSpeed, carWidth, carHeight, carColor, track, win)
     
 
     win.updateRoot()

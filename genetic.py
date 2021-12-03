@@ -4,11 +4,11 @@ from car import *
 
 class Genetic:
     
-    def __init__(self, carsPerGeneration, mutationChance, carSpeed, carWidth, carHeight, carColor, track, win):
+    def __init__(self, carsPerGeneration, mutationRate, carSpeed, carWidth, carHeight, carColor, track, win):
         self.carsPerGeneration = carsPerGeneration
         self.generationNum = 0
         self.DNAlength = 28
-        self.mutationChance = mutationChance
+        self.mutationRate = mutationRate
         
         self.firstGen(carsPerGeneration, carSpeed, carWidth, carHeight, carColor, track, win)
         
@@ -27,6 +27,7 @@ class Genetic:
                 DNA.append(tempDNA)
 
             self.carList.append(Car(DNA, carSpeed, carWidth, carHeight, carColor, track, win))
+
 
                  
             
@@ -50,7 +51,9 @@ class Genetic:
         
     
     def crossover(self, topCarsList):
-        tempCarlistDna = [0] * self.DNAlength
+
+        tempCarlistDna = [0] * self.carsPerGeneration
+
         randTopCar1 = topCarsList[random.randrange(0, len(topCarsList))]
 
         differentParents = False
@@ -71,25 +74,37 @@ class Genetic:
                 else:
                     tempDna[i] = randTopCar2.dna[i]
                 
+            tempCarlistDna[j] = self.mutation(tempDna)
 
-                tempDna[i] = self.mutation(tempDna[i])
-            tempCarlistDna[j] = tempDna
 
         for j in range(self.carsPerGeneration):
-
             self.carList[j].dna = tempCarlistDna[j]
 
     
     
     #randomly select one gene in each cars DNA and change it
     def mutation(self, dna):
-        mutationRand = random.uniform(0, 1)
-        if (mutationRand <= self.mutationChance):
-            mutation = round(random.uniform(-1,1), 4)#new random gene
-            dna = mutation
-        else:
-            mutation = 0
+        numOfDnaToMutate = int(self.DNAlength * self.mutationRate)
 
+        dnaIndeces = [0] * (self.DNAlength) #hold indeces 1 - 28 to be able to remove indeces
+        for i in range(self.DNAlength):
+            dnaIndeces[i] = i
+
+        for i in range(numOfDnaToMutate):
+            mutation = round(random.uniform(-0.5,0.5), 4)#new random gene
+
+            indexIndex = random.randrange(0, len(dnaIndeces)) #get a random index
+            dnaToMutateIndex = dnaIndeces[indexIndex] #get index of dna at index
+
+            if (indexIndex >= 20):
+                smallMutation = random.uniform(-0.005, 0.005)
+
+                dna[dnaToMutateIndex] += smallMutation
+            else:
+                dna[dnaToMutateIndex] = mutation #apply mutation to dna
+            
+            
+            dnaIndeces.pop(indexIndex) #delete index from indeces
         return dna
           
           
@@ -103,6 +118,7 @@ class Genetic:
         
         for i in range(len(self.carList)):
             self.carList[i].reset()
+        
 
         
         
