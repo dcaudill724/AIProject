@@ -91,7 +91,7 @@ class Genetic:
             dnaIndeces[i] = i
 
         for i in range(numOfDnaToMutate):
-            mutation = round(random.uniform(-0.5,0.5), 4)#new random gene
+            mutation = round(random.uniform(-1, 1), 4)#new random gene
 
             indexIndex = random.randrange(0, len(dnaIndeces)) #get a random index
             dnaToMutateIndex = dnaIndeces[indexIndex] #get index of dna at index
@@ -101,7 +101,7 @@ class Genetic:
 
                 dna[dnaToMutateIndex] += smallMutation
             else:
-                dna[dnaToMutateIndex] = mutation #apply mutation to dna
+                dna[dnaToMutateIndex] += mutation #apply mutation to dna
             
             
             dnaIndeces.pop(indexIndex) #delete index from indeces
