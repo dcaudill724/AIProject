@@ -1,10 +1,10 @@
 from graphics import *
 import math
+from neuralNetwork import *
+import random
 
 class Car:
-    def __init__(self, dna, speed, width, height, color, track, win, rotationSpeed):
-        self.rotationSpeed = rotationSpeed
-
+    def __init__(self, dna, speed, width, height, color, track, win):
         #Data given from constructor
         self.dna = dna
         self.speed = speed
@@ -42,11 +42,44 @@ class Car:
         self.loopsCompleted = 0
         self.fitnessScore = 0
         
+    def reset(self):
+        self.carBody.undraw()
+        for i in range(self.rayDirections.__len__()):
+            self.rays[i].undraw()   
+
+        #initial movement data
+        self.position = self.track.midPointList[0]
+        self.direction = Point(0, -1)
+        
+        #initial rays
+        self.rayDirections = [Point(-1, 0), Point(-math.sqrt(2)/2, -math.sqrt(2)/2), Point(0, -1), Point(math.sqrt(2)/2, -math.sqrt(2)/2), Point(1, 0)]
+        self.rays = []
+        self.rayData = []
+        for i in range(self.rayDirections.__len__()):
+            self.rays.append(Line(self.position, Point(self.position.x + self.rayDirections[i].x * 200, self.position.y + self.rayDirections[i].y * 200)))
+            
+        #initial body daya
+        self.carCorners = [
+                Point(-self.width/2, -self.height/2), 
+                Point(-self.width/2, self.height/2),
+                Point(self.width/2, self.height/2),
+                Point(self.width/2, -self.height/2)
+        ]
+        self.carBody = Polygon()
+
+        #initial neural network data
+        self.generateNeuralNetork()
+
+        #initial genetic algorithm data
+        self.lastClosestTrackSegment = 0
+        self.loopsCompleted = 0
+        self.fitnessScore = 0
+
+        #self.draw()
 
     #generates the neural network that controls the car direction
     def generateNeuralNetork(self):
-        #self.nn = NeuralNetwork(self.dna)
-        return
+        self.nn = NeuralNetwork([0, 0, 0, 0, 0], self.dna)
 
     #obtain current fitness score
     def getFitnessScore(self):
@@ -74,9 +107,9 @@ class Car:
         self.updateDirection() #Rotate body data and determine how much to turn using neural network
         self.position = Point(self.position.x + self.direction.x * self.speed, self.position.y + self.direction.y * self.speed) #move in the relative forward direction
         
-        st = time.perf_counter()
+        #st = time.perf_counter()
         self.rayData = self.getRayData() #cast rays and get distance info
-        et = time.perf_counter()
+        #et = time.perf_counter()
 
         if (self.checkCollision()): #if the car collides with the wall
             self.position = lastPosition
@@ -221,8 +254,22 @@ class Car:
 
     #input ray data into nn, get new direction data, turn the car accordingly
     def updateDirection(self):
-        #newDirectionData = self.nn.GetNextDirectionData(self.getRayData())
-        angle = self.rotationSpeed #this will later be calculated from newDirectionData
+        angle = 0#this will later be calculated from newDirectionData
+        
+
+        if (len(self.rayData) != 0):
+            mappedRayData = self.rayData.copy()
+            for i in range(len(self.rayData)):
+                mappedRayData[i] /= 400
+
+            self.nn.nextInputs(mappedRayData)
+            directionData = self.nn.output()
+            turnRight = directionData[1]
+            turnLeft = directionData[0]
+            turnTotal = turnRight - turnLeft
+            angle = turnTotal / 2
+            #print(mappedRayData)
+        
         
         #rotate direction
         self.direction = self.rotateVector(self.direction, angle)

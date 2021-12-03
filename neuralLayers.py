@@ -1,12 +1,5 @@
 import numpy as np
 
-
-def main():
-    a = inputLayer([0.4, 0.5, 0.6, 0.7, 0.8])
-    b = hiddenLayer(a.output(), [[0.1, 0.2, 0.3, 0.9, 0.6], [0.4, 0.1, 0.9, 0.9, 0.5], [0.9, 0.4, 0.6, 0.9, 0.4], [0.1, 0.9, 0.8, 0.7, 0.6]])
-    c = outputLayer(b.output(), [[0.4, 0.9, 0.3, 0.1,], [0.8, 0.1, 0.2, 0.1,]])
-    print(c.output())
-
 # Takes a matrix of size 1 x 5
 class inputLayer():
     def __init__(self, i):
@@ -16,12 +9,13 @@ class inputLayer():
         self.tmp = []
         for x in i:
             self.tmp.append(self.sigmoid(x))
+        
         self.inputs = []
         for i in range(4):
             self.inputs.append(self.tmp)
 
     def sigmoid(self, x):
-        return 1.0 / (1.0+ np.exp(-x))
+        return 1.0 / (1.0 + np.exp(-x))
 
     def output(self):
         return self.inputs
@@ -83,6 +77,3 @@ class outputLayer():
 
     def output(self):
         return self.addedInputs
-
-
-main()

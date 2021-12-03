@@ -1,80 +1,110 @@
 import random 
+from car import *
 
 
 class Genetic:
     
-    def __init__(self, cars):
-        self.carsList = cars
+    def __init__(self, carsPerGeneration, mutationChance, carSpeed, carWidth, carHeight, carColor, track, win):
+        self.carsPerGeneration = carsPerGeneration
         self.generationNum = 0
         self.DNAlength = 28
+        self.mutationChance = mutationChance
         
-        self.firstGen()
+        self.firstGen(carsPerGeneration, carSpeed, carWidth, carHeight, carColor, track, win)
         
         
     #initial generation of random DNA for every car
-    def firstGen(self):
-        #self.carsList = [[]for _ in range(self.carsAmount)]
-        for car in self.carsList:
+    def firstGen(self, carsPerGeneration, carSpeed, carWidth, carHeight, carColor, track, win):
+        print("Generation 1")
+        self.generationNum += 1
+
+        self.carList = []
+
+        for i in range(carsPerGeneration):
             DNA = []
-            for i in range(self.DNAlength):
-                DNA = round(random.uniform(-1,1), 4)
-                car.dna.append(DNA)
+            for j in range(self.DNAlength):
+                tempDNA = round(random.uniform(-1,1), 4)
+                DNA.append(tempDNA)
+
+            self.carList.append(Car(DNA, carSpeed, carWidth, carHeight, carColor, track, win))
+
                  
             
     #find the top cars with the best fitness score and add them to a pool
-    #fitnessScores is a list and the index should match its respective car in the carsList
-    def selection(self, topCarsAmount, fitnessScores):
-        #sorts the fitness score from lowest to highest and keeps track of its original index
-        li= []
-        for i in range(len(fitnessScores)):
-            li.append([fitnessScores[i],i])
-        li.sort()
-        topCarsIndex = []
+    def selection(self, topCarsAmount):
+        li = []
+
         for i in range(topCarsAmount):
-          topCarsIndex.append(li[i][1])
-          
-        #add the cars with the best fitness scores to a pool
-        topCarsList = [None for _ in range(topCarsAmount)]
-        for i,val in enumerate(topCarsIndex):
-            topCarsList[i] = self.carsList[val]
-        
-        return topCarsList
+            bestCarIndex = 0
+            bestCarFitnessScore = float('-inf')
+
+            for j in range(len(self.carList)):
+                if (self.carList[j].fitnessScore > bestCarFitnessScore):
+                    if (not self.carList[j] in li):
+                        bestCarIndex = j
+                        bestCarFitnessScore = self.carList[j].fitnessScore
+            
+            li.append(self.carList[bestCarIndex])
+
+        return li
         
     
     def crossover(self, topCarsList):
-        tempcarsList = []
-        topCarsAmount = len(topCarsList)
-        halfcarDNA = int(self.DNAlength/2) 
-        child1,child2 = [],[]
+        tempCarlistDna = [0] * self.DNAlength
+        randTopCar1 = topCarsList[random.randrange(0, len(topCarsList))]
+
+        differentParents = False
+        randTopCar2 = topCarsList[random.randrange(0, len(topCarsList))]
+        while(not differentParents):
+            if (not (randTopCar1 is randTopCar2)):
+                differentParents = True
+            else: 
+                randTopCar2 = topCarsList[random.randrange(0, len(topCarsList))]
         
-        for i in range(0, topCarsAmount, 2):
-            parent1 = topCarsList[i].dna.copy()
-            parent2 = topCarsList[i+1].dna.copy()
-            
-            child1 = parent1[:halfcarDNA] + parent2[halfcarDNA:]
-            child2 = parent2[:halfcarDNA] + parent1[halfcarDNA:]
-            
-            tempcarsList.append(child1)
-            tempcarsList.append(child2)
-            
-        return tempcarsList
+
+        for j in range(self.carsPerGeneration):
+            tempDna = [0] * self.DNAlength
+            for i in range(self.DNAlength):
+                breedRand = random.uniform(-1, 1)
+                if (breedRand > 0):
+                    tempDna[i] = randTopCar1.dna[i]
+                else:
+                    tempDna[i] = randTopCar2.dna[i]
+                
+
+                tempDna[i] = self.mutation(tempDna[i])
+            tempCarlistDna[j] = tempDna
+
+        for j in range(self.carsPerGeneration):
+
+            self.carList[j].dna = tempCarlistDna[j]
+
     
     
     #randomly select one gene in each cars DNA and change it
-    def mutation(self, topCarsList):
-        for car in topCarsList:
-            r = random.randint(0, self.DNAlength-1)#random gene from DNA
-            gene = round(random.uniform(-1,1), 4)#new random gene
-            car[r] = gene
-            
-        return topCarsList
+    def mutation(self, dna):
+        mutationRand = random.uniform(0, 1)
+        if (mutationRand <= self.mutationChance):
+            mutation = round(random.uniform(-1,1), 4)#new random gene
+            dna = mutation
+        else:
+            mutation = 0
+
+        return dna
           
           
     #generate new dna for each car based off of the fittest cars pool
-    def newGen(self, topCarsList):
-        for car in self.carsList:
-              r = random.randint(0, len(topCarsList)-1)#random DNA fron top Cars pool
-              car.dna = topCarsList[r]
+    def newGen(self, topCarsAmount):
+        self.generationNum += 1
+        print("Generation " + str(self.generationNum))
+
+        topCars = self.selection(topCarsAmount)
+        self.crossover(topCars)
+        
+        for i in range(len(self.carList)):
+            self.carList[i].reset()
+
+        
         
 
   

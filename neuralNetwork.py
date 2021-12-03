@@ -4,10 +4,12 @@ from neuralLayers import *
 class NeuralNetwork():
 
     def __init__(self, i, w):
+        
         self.seperateWeights(w)
         self.nextInputs(i)
-        
+
     def nextInputs(self, i):
+        #print(i)
         self.iLayer = inputLayer(i)
         self.hLayer = hiddenLayer(self.iLayer.output(), self.hWeights)
         self.oLayer = outputLayer(self.hLayer.output(), self.oWeights)
