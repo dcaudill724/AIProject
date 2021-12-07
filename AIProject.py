@@ -26,7 +26,7 @@ carHeight = 16
 framesPerGeneration = 2400
 carsPerGeneration = 20
 topCarsToBreed = 3
-mutationRate = 0.05
+mutationRate = 0.1
 
 def main():
     
