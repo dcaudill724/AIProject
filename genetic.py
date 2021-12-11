@@ -54,19 +54,23 @@ class Genetic:
 
         tempCarlistDna = [0] * self.carsPerGeneration
 
-        randTopCar1 = topCarsList[random.randrange(0, len(topCarsList))]
-
-        differentParents = False
-        randTopCar2 = topCarsList[random.randrange(0, len(topCarsList))]
-        while(not differentParents):
-            if (not (randTopCar1 is randTopCar2)):
-                differentParents = True
-            else: 
-                randTopCar2 = topCarsList[random.randrange(0, len(topCarsList))]
-        
-
+        #Make new DNA from all the cars
         for j in range(self.carsPerGeneration):
+
+            #Select two random top performing cars as the parents
+            randTopCar1 = topCarsList[random.randrange(0, len(topCarsList))]
+
+            differentParents = False
+            randTopCar2 = topCarsList[random.randrange(0, len(topCarsList))]
+            while(not differentParents):
+                if (not (randTopCar1 is randTopCar2)):
+                    differentParents = True
+                else: 
+                    randTopCar2 = topCarsList[random.randrange(0, len(topCarsList))]
+
             tempDna = [0] * self.DNAlength
+
+            #Select one of the two parents DNA and assign it to the new DNA array
             for i in range(self.DNAlength):
                 breedRand = random.uniform(-1, 1)
                 if (breedRand > 0):
